@@ -2,7 +2,7 @@ from picamera2 import Picamera2
 import cv2
 import time
 from pathlib import Path 
-from dataclass import dataclass
+from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class CaptureConfig:
@@ -10,10 +10,10 @@ class CaptureConfig:
     warmup_s: float = 2.0
 
 class CameraCapture:
-    def __init__(self, cfg: CaputeConfig):
+    def __init__(self, cfg: CaptureConfig):
         self.cfg = cfg
         self.picam2 = Picamera2()
-        config = self.create_still_configuration(
+        config = self.picam2.create_still_configuration(
             main={"size": self.cfg.size, "format": "RGB888"}
         )
         self.picam2.configure(config)
