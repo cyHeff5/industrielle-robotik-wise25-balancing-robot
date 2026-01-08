@@ -6,7 +6,7 @@ import os
 # -----------------------------
 # EINSTELLUNGEN
 # -----------------------------
-OUTPUT_DIR = "Calibration Input"
+OUTPUT_DIR = "Calibration_Input"
 IMAGE_PREFIX = "calib"
 NUM_IMAGES = 20          # wie viele Bilder aufnehmen?
 DELAY_BETWEEN = 1.0      # Sekunden zwischen Aufnahmen
