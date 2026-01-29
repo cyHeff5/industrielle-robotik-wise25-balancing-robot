@@ -2,10 +2,14 @@ from flask import Flask, Response
 import cv2
 import numpy as np
 from picamera2 import Picamera2
+import threading
+import sys
+from collections import deque
 
 from .detector import detect_ball
 from .types import HsvRange
 from .utils import draw_coordinate_system, pixel_to_center_coords
+from .hsv_calibration import calibrate_hsv_from_center_roi
 
 
 app = Flask(__name__)
@@ -26,8 +30,31 @@ HSV_RANGE = HsvRange(
 
 GRID_STEP = 100
 
+# ROI sampling settings
+ROI_SIZE = 140
+CALIB_FRAMES = 15
+
+_calib_requested = False
+_calib_frames: deque[np.ndarray] = deque(maxlen=CALIB_FRAMES)
+
+
+def _keyboard_listener():
+    # Press "c" + Enter to start ROI sampling
+    global _calib_requested
+    print("Press 'c' + Enter to calibrate HSV from center ROI.")
+    while True:
+        ch = sys.stdin.read(1)
+        if not ch:
+            continue
+        if ch.lower() == "c":
+            _calib_requested = True
+
+
+threading.Thread(target=_keyboard_listener, daemon=True).start()
+
 
 def mjpeg_generator():
+    global HSV_RANGE, _calib_requested
     while True:
         frame_rgb = picam2.capture_array()
 
@@ -37,6 +64,18 @@ def mjpeg_generator():
         frame_bgr = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
 
         draw_coordinate_system(frame_bgr, grid_step=GRID_STEP)
+
+        # ROI sampling: collect a few frames, then update HSV range
+        if _calib_requested:
+            _calib_frames.append(frame_bgr.copy())
+            if len(_calib_frames) >= CALIB_FRAMES:
+                last = _calib_frames[-1]
+                HSV_RANGE = calibrate_hsv_from_center_roi(
+                    last, roi_size=ROI_SIZE, s_min=40, v_min=40
+                )
+                _calib_frames.clear()
+                _calib_requested = False
+                print(f"New HSV_RANGE: lower={HSV_RANGE.lower}, upper={HSV_RANGE.upper}")
 
         result = detect_ball(frame_bgr, HSV_RANGE)
         if result.valid:
