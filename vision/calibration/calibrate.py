@@ -5,17 +5,20 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ChessboardConfig:
+    # Schachbrett-Parameter fuer die Intrinsics
     inner_corners: tuple[int, int]  # (cols, rows) innere Ecken
     square_size_mm: float
 
 @dataclass(frozen=True)
 class CalibrationResult:
+    # Ergebnisobjekt, damit alles gesammelt zurueckgeben
     camera_matrix: np.ndarray
     dist_coeffs: np.ndarray
     rms: float
     mean_reprojection_error: float
 
 def _prepare_object_points(cfg: ChessboardConfig) -> np.ndarray:
+    # 3D-Referenzpunkte im Schachbrett-Koordinatensystem
     cols, rows = cfg.inner_corners
     objp = np.zeros((cols * rows, 3), np.float32)
     objp[:, :2] = np.mgrid[0:cols, 0:rows].T.reshape(-1, 2)
@@ -27,6 +30,7 @@ def calibrate_from_images(
     pattern: ChessboardConfig,
     out_debug_dir: Path | None = None
 ) -> CalibrationResult:
+    # Hauptfunktion: aus Bildern die Intrinsics schaetzen
     images = sorted(list(images_dir.glob("*.jpg")) + list(images_dir.glob("*.png")))
     if not images:
         raise FileNotFoundError(f"No images found in {images_dir}")
@@ -40,7 +44,6 @@ def calibrate_from_images(
              cv2.CALIB_CB_FAST_CHECK)
 
     image_size = None
-    used = 0
 
     if out_debug_dir:
         (out_debug_dir / "corners").mkdir(parents=True, exist_ok=True)
@@ -52,7 +55,7 @@ def calibrate_from_images(
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         image_size = gray.shape[::-1]
 
-        # robuster: wenn verfügbar, SB nutzen
+        # wenn verfügbar, SB nutzen
         found = False
         corners = None
         if hasattr(cv2, "findChessboardCornersSB"):
@@ -68,18 +71,19 @@ def calibrate_from_images(
 
         objpoints.append(objp)
         imgpoints.append(corners2)
-        used += 1
-
         if out_debug_dir:
             vis = img.copy()
             cv2.drawChessboardCorners(vis, pattern.inner_corners, corners2, True)
             cv2.imwrite(str(out_debug_dir / "corners" / p.name), vis)
 
+    if image_size is None or not objpoints:
+        raise RuntimeError("No valid chessboard detections. Check images and pattern.")
+
     rms, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
         objpoints, imgpoints, image_size, None, None
     )
 
-    # Reprojection error
+    # Reprojection error (Qualitaetscheck)
     total_err = 0.0
     total_points = 0
     for i in range(len(objpoints)):

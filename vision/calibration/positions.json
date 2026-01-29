@@ -1,0 +1,12 @@
+{
+  "_comment": "Fake-Positionen fuer die Kalibrierungsfahrt, spaeter durch echte Winkel ersetzen",
+  "positions": [
+    { "name": "center", "roll_deg": 0.0, "pitch_deg": 0.0, "settle_s": 1.0 },
+    { "name": "left",   "roll_deg": -5.0, "pitch_deg": 0.0, "settle_s": 1.0 },
+    { "name": "right",  "roll_deg": 5.0, "pitch_deg": 0.0, "settle_s": 1.0 },
+    { "name": "up",     "roll_deg": 0.0, "pitch_deg": 5.0, "settle_s": 1.0 },
+    { "name": "down",   "roll_deg": 0.0, "pitch_deg": -5.0, "settle_s": 1.0 },
+    { "name": "diag1",  "roll_deg": 4.0, "pitch_deg": 4.0, "settle_s": 1.0 },
+    { "name": "diag2",  "roll_deg": -4.0, "pitch_deg": -4.0, "settle_s": 1.0 }
+  ]
+}
