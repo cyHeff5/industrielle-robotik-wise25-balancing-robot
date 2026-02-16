@@ -76,7 +76,7 @@ winkel_y = 0
 
 
 ## Kinematik berechnen --> ergibt Servowinkel
-kinematik = func_kinematik_main(stutze_v_u_pos, stutze_l_u_pos, stutze_r_u_pos, ball_pos, 15, -10, schwinge_o_l, schwinge_u_l, solver_positionen)
+kinematik = func_kinematik_main(stutze_v_u_pos, stutze_l_u_pos, stutze_r_u_pos, ball_pos, winkel_x,winkel_y, schwinge_o_l, schwinge_u_l, solver_positionen)
 
 d         = kinematik["d"] # Informationen für die nächste Loop-Iteration
 n_vektor  = kinematik["n_vek"] 

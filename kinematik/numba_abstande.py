@@ -4,7 +4,7 @@ import numpy as np
 from numba import njit
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=False, fastmath=True)
 def _func_abstande_kernel(a: np.ndarray, s_r: np.ndarray, s_v: np.ndarray, s_l: np.ndarray, l: float) -> np.ndarray:
     tv = a[0]
     tl = a[1]
