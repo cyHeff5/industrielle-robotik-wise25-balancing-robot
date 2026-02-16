@@ -34,13 +34,14 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, pos_ball, winkel_x, win
     s_v = np.array([0.0, 1.0, a[0]])
 
     # Schnittgerade linker Link zur Ebene berechnen
-    tan_30 = math.tan(math.degrees(30))
+    o = math.radians(30)
+    tan_30 = math.tan(o)
     a = (-n_vek[0] - n_vek[1] * tan_30) / n_vek[2]
-    s_l = np.array([1, tan_30, a[0]])
+    s_l = np.array([-1, -tan_30, a[0]])
 
     # Schnittgerade rechter Link zur Ebene berechnen
     a = (-n_vek[0] + n_vek[1] * tan_30) / n_vek[2]
-    s_r = np.array([-1, tan_30, a[0]])
+    s_r = np.array([1, -tan_30, a[0]])
 
 
     # Endpunkte finden
@@ -48,31 +49,60 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, pos_ball, winkel_x, win
     solver.s_v[:] = s_v # Steigungen im Solver aktualisieren
     solver.s_l[:] = s_l
     solver.s_r[:] = s_r
+ 
 
-    stutzpunkt = np.array([5, 5, 5])
-
-    result = solver.evaluate(stutzpunkt)    
-
-    c = result[0] * s_v
-    
-    c = c
-
-    
-    
-
-    solver = NumbaAbstande(s_r, s_v, s_l, 216.5064)
-    solver.warmup()  # compile numba
+    #solver = NumbaAbstande(s_r, s_v, s_l, 216.5064)
+    #solver.warmup()  # compile numba
 
     # initial guess for [tv, tl, tr]
-    a0 = np.array([1.0, 1.0, 1.0])
+    a0 = np.array([100, 100, 100])
 
-    res = root(func_abstande, a0, args=(solver,), method="hybr")
+    res = root(func_abstande, a0, args=(solver,), method="hybr") # Punkte über Solver finden
+    ep_v = res.x[0] * s_v #Punkte mit Solver ergebnis berechnen
+    ep_l = res.x[1] * s_l
+    ep_r = res.x[2] * s_r
 
-    print("Success:", res.success)
-    print("Solution:", res.x)   # → [tv, tl, tr]
+    # Hier Z Offset nach bedarf
+     #--> Wir bleiben gerade immer um Standardhöhe
+      # ep_v[2] += pos_ball[2]
+       #ep_l[2] += pos_ball[2]
+       #ep_r[2] += pos_ball[2]
+     
+     #--> Alternativ könnten wir Ballhöhe halten
 
+    # Feststellen: sind die Punkte erreichbar --> hier vereinfacht nur die Länge. Geplant Liste mit Erreichbarkeit
+    max_l   = schwinge_o_l + schwinge_u_l # maximale Länge der Koppeln
+    ok = 1 # Wenn 1, dann sind alle Punkte ok, wenn Null, muss nachgebessert werden
+
+    delta_l = func_laenge(ep_v, pos_arm_v) # Sind alle Endpunkte näher 
+    if delta_l > max_l:
+        ok = 0
+    delta_l = func_laenge(ep_l, pos_arm_l)
+    if delta_l > max_l:
+        ok = 0
+    delta_l = func_laenge(ep_r, pos_arm_r)
+    if delta_l > max_l:
+        ok = 0   
+
+    # Was tun, wenn zu weit weg? 
+    #--> wenn hier später ein Loop ist, dann einfach winkel abflachen und erneut berechnen. Sonst break
+    
+
+
+
+    return 
+
+
+def func_laenge(v1, v2):
+
+    abstand = (v1(0) - v2(0))**2 + (v1(2) - v2(2))**2 + (v1(2) - v2(2))**2
+    abstand = abstand**0.5
+    return abstand
+    
 
 
 def func_abstande(a, solver: NumbaAbstande):
     return solver.evaluate(a)
+
+
 

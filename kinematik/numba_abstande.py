@@ -12,7 +12,7 @@ def _func_abstande_kernel(a: np.ndarray, s_r: np.ndarray, s_v: np.ndarray, s_l: 
     l2 = l * l
 
     f0 = (s_l[0] * tl) ** 2 + (s_v[1] * tv - s_l[1] * tl) ** 2 + (s_v[2] * tv - s_l[2] * tl) ** 2 - l2
-    f1 = (s_v[0] * tv - s_r[0] * tr) ** 2 + (s_v[1] * tv - s_r[1] * tr) ** 2 + (s_v[2] * tv - s_r[2] * tr) ** 2 - l2
+    f1 = (s_r[0] * tr) ** 2 + (s_v[1] * tv - s_r[1] * tr) ** 2 + (s_v[2] * tv - s_r[2] * tr) ** 2 - l2
     f2 = (s_l[0] * tl - s_r[0] * tr) ** 2 + (s_l[1] * tl - s_r[1] * tr) ** 2 + (s_l[2] * tl - s_r[2] * tr) ** 2 - l2
 
     out = np.empty(3, dtype=np.float64)
