@@ -1,107 +1,108 @@
+import math
+import time
 
 import numpy as np
-import math
-from gpiozero import AngularServo #für Servo Ansteuerung
+try:
+    from gpiozero import AngularServo  # for servo control
+except ImportError:
+    AngularServo = None
 
 from kinematik.ebenen_gleichungen import *
-from kinematik.numba_abstande import NumbaAbstande
 from kinematik.kinematik_main import func_kinematik_main
 from kinematik.kinematik_main import func_servo_drehen
-## hier nur für Test Zeiterfassung:
+from kinematik.numba_abstande import NumbaAbstande
+from kinematik.solver import KinematikSolver
 
-import time
 t_ges = 0
 
-# benötigte Variablen: 
+# Required variables
+platte_radius = 125  # [mm]
+stutze_v_u_pos = np.array([0, platte_radius, 0])
+delta_winkel = 120  # [deg]
 
-platte_radius      = 125 # in [mm]
-stutze_v_u_pos     = np.array([0, platte_radius, 0]) # Position Stütze vorne unten --> anderen beiden errrechnen sich
-delta_winkel       = 120  # Winkel in dem die Stüetzen stehen [grad]
-
-platte_hohe_std    = 165 #  Ausgangshöhe der Platte über Servowelle bei 0°
+platte_hohe_std = 165
 
 schwinge_o_l = 179.2
 schwinge_u_l = 70
 
-# Servos definieren
+# Servos
+# servo_v = AngularServo(18, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+modifier_v = 1
+offset_v = 0
+# servo_l = AngularServo(18, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+modifier_l = 1
+offset_l = 0
+# servo_r = AngularServo(18, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+modifier_r = 1
+offset_r = 0
 
-#Servo vorne:
-#servo_v     = AngularServo(18, min_angle= 0, max_angle=180, min_pulse_width= 0.0005, max_pulse_width=0.0025)
-modifier_v  = 1 #Faktor für Winkel
-offset_v    = 0 # Offset für Winkel
-#Servo links:
-#servo_l     = AngularServo(18, min_angle= 0, max_angle=180, min_pulse_width= 0.0005, max_pulse_width=0.0025)
-modifier_l  = 1 #Faktor für Winkel
-offset_l    = 0 # Offset für Winkel
-#Servo rechts:
-#servo_r     = AngularServo(18, min_angle= 0, max_angle=180, min_pulse_width= 0.0005, max_pulse_width=0.0025)
-modifier_r  = 1 #Faktor für Winkel
-offset_r    = 0 # Offset für Winkel
-
-
-
-
-
-#vorab Berechnungen
-delta_winkel   = math.radians(delta_winkel - 90) # [rad] wie weit die unteren Stüetzen von der x achse aus verdreht sind
-stutze_l_u_pos = np.array([-math.cos(delta_winkel) * platte_radius, -math.sin(delta_winkel) * platte_radius, 0 ])
+# Pre-calculations
+delta_winkel = math.radians(delta_winkel - 90)
+stutze_l_u_pos = np.array([-math.cos(delta_winkel) * platte_radius, -math.sin(delta_winkel) * platte_radius, 0])
 stutze_r_u_pos = np.array([stutze_l_u_pos[0] * -1, stutze_l_u_pos[1], 0])
 
-# ersten Loop vorbereiten --> wir gehen von ebenen System aus
-n_vektor = np.array([0, 0, 1]) #Normalenvektor der Ebene'
-# Ebene wird beschrieben durch: n_x * x + n_y * y + n_x * x = d mit n_? Anteil des Normalenvektor
-d = func_d_fur_ebene(n_vektor, [stutze_v_u_pos[0], stutze_v_u_pos[1], platte_hohe_std]) # d für Ebene berechnen 
+# First loop setup
+n_vektor = np.array([0, 0, 1])
+d = func_d_fur_ebene(n_vektor, [stutze_v_u_pos[0], stutze_v_u_pos[1], platte_hohe_std])
 
-# Solver für gekiptte Plattform 
+# Solver setup
 s_r = np.array([1.0, -0.4, 0.9], dtype=np.float64)
 s_v = np.array([0.8, 0.6, -0.7], dtype=np.float64)
 s_l = np.array([-0.5, 0.3, 1.1], dtype=np.float64)
-solver_positionen = NumbaAbstande(s_r=s_r, s_l=s_l, s_v=s_v, l=216.5064)
-solver_positionen.warmup() #Solver initialisieren
 
+abstande = NumbaAbstande(s_r=s_r, s_l=s_l, s_v=s_v, l=216.5064)
+abstande.warmup()
 
+# Choose solver method: "newton" or "scipy"
+solver_method = "scipy"
+solver_positionen = KinematikSolver(abstande=abstande, method=solver_method, tol=1e-3, max_iter=50)
 
-############# Main/Berechnungen: ############# 
-
- ###Loop start
-
-## Bildverarbeitung
-
-ball_pos = np.array([15, 20, -100]) # Ballposition aus Reglung --> kann nur x-y Position bestimmen
-
-## Ballkoordinate vervollständigen
+# Main loop simulation
+ball_pos = np.array([15, 20, -100])
 ball_pos[2] = func_z_in_ebene(ball_pos, n_vektor, d)
 
-## Regler berechnungen
 z = 0
 f = 0
+solver_fail = 0
 while z < 90:
-    z +=1
+    z += 1
     y = 0
     while y < 90:
         y += 1
         f += 1
-        winkel_x = -45+z # Angabe in [Grad]
+        winkel_x = -45 + z
         winkel_y = 0
 
-
-        ## Kinematik berechnen --> ergibt Servowinkel
         t0 = time.perf_counter()
-        kinematik = func_kinematik_main(stutze_v_u_pos, stutze_l_u_pos, stutze_r_u_pos, ball_pos, winkel_x,winkel_y, schwinge_o_l, schwinge_u_l, solver_positionen)
-
+        kinematik = func_kinematik_main(
+            stutze_v_u_pos,
+            stutze_l_u_pos,
+            stutze_r_u_pos,
+            ball_pos,
+            winkel_x,
+            winkel_y,
+            schwinge_o_l,
+            schwinge_u_l,
+            solver_positionen,
+        )
+        if not kinematik["solver_success"]:
+            solver_fail += 1
         dt = time.perf_counter() - t0
         t_ges += dt
 
+# Stats
 t_avg = t_ges / f
-f_avg = 1/t_avg
+f_avg = 1 / t_avg
 z = z
+solver_ok_rate = (f - solver_fail) / f
+print(f"Solver method: {solver_method}")
+print(f"Mean loop time: {t_avg * 1e6:.2f} us ({f_avg:.1f} Hz)")
+print(f"Solver success rate: {solver_ok_rate:.3f} ({f - solver_fail}/{f})")
 
-#d         = kinematik["d"] # Informationen für die nächste Loop-Iteration
-#n_vektor  = kinematik["n_vek"] 
+# d = kinematik["d"]
+# n_vektor = kinematik["n_vek"]
 
-## Servos ansteuern ##
-
-#func_servo_drehen(servo_v, kinematik['phi_servo_v'], offset_v, modifier_v)
-#func_servo_drehen(servo_l, kinematik['phi_servo_l'], offset_l, modifier_l)
-#func_servo_drehen(servo_r, kinematik['phi_servo_r'], offset_r, modifier_r)
- ### Loop end
+# Servo output
+# func_servo_drehen(servo_v, kinematik["phi_servo_v"], offset_v, modifier_v)
+# func_servo_drehen(servo_l, kinematik["phi_servo_l"], offset_l, modifier_l)
+# func_servo_drehen(servo_r, kinematik["phi_servo_r"], offset_r, modifier_r)
