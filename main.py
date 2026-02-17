@@ -4,10 +4,13 @@ import math
 from gpiozero import AngularServo #für Servo Ansteuerung
 
 from kinematik.ebenen_gleichungen import *
-from kinematik.numba_abstande import * #NumbaAbstande
-from kinematik.kinematik_main import *
+from kinematik.numba_abstande import NumbaAbstande
+from kinematik.kinematik_main import func_kinematik_main
+from kinematik.kinematik_main import func_servo_drehen
+## hier nur für Test Zeiterfassung:
 
-
+import time
+t_ges = 0
 
 # benötigte Variablen: 
 
@@ -70,16 +73,31 @@ ball_pos = np.array([15, 20, -100]) # Ballposition aus Reglung --> kann nur x-y 
 ball_pos[2] = func_z_in_ebene(ball_pos, n_vektor, d)
 
 ## Regler berechnungen
+z = 0
+f = 0
+while z < 90:
+    z +=1
+    y = 0
+    while y < 90:
+        y += 1
+        f += 1
+        winkel_x = -45+z # Angabe in [Grad]
+        winkel_y = 0
 
-winkel_x = 0 # Angabe in [Grad]
-winkel_y = 0
 
+        ## Kinematik berechnen --> ergibt Servowinkel
+        t0 = time.perf_counter()
+        kinematik = func_kinematik_main(stutze_v_u_pos, stutze_l_u_pos, stutze_r_u_pos, ball_pos, winkel_x,winkel_y, schwinge_o_l, schwinge_u_l, solver_positionen)
 
-## Kinematik berechnen --> ergibt Servowinkel
-kinematik = func_kinematik_main(stutze_v_u_pos, stutze_l_u_pos, stutze_r_u_pos, ball_pos, winkel_x,winkel_y, schwinge_o_l, schwinge_u_l, solver_positionen)
+        dt = time.perf_counter() - t0
+        t_ges += dt
 
-d         = kinematik["d"] # Informationen für die nächste Loop-Iteration
-n_vektor  = kinematik["n_vek"] 
+t_avg = t_ges / f
+f_avg = 1/t_avg
+z = z
+
+#d         = kinematik["d"] # Informationen für die nächste Loop-Iteration
+#n_vektor  = kinematik["n_vek"] 
 
 ## Servos ansteuern ##
 
