@@ -46,9 +46,8 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, ref_point, winkel_x, wi
 
     # Endpunkte finden
 
-    solver.s_v[:] = s_v # Steigungen im Solver aktualisieren
-    solver.s_l[:] = s_l
-    solver.s_r[:] = s_r
+    solver.update_directions(s_v=s_v, s_l=s_l, s_r=s_r)
+    x, _, solver_success, solver_iter = solver.solve()
 
     # initial guess for [tv, tl, tr]
     a0 = np.array([100, 100, 100])
