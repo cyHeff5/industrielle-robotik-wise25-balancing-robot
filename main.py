@@ -71,13 +71,13 @@ while n < 8:
         case 0:
             winkel_x    = 0
             winkel_y    = 0
-            pos_ref[2]  = 130
+            pos_ref[2]  = 100
         case 1: 
-            winkel_x    = -7
+            winkel_x    = -10
             winkel_y    = 0
             pos_ref[2]  = 165 
         case 2: 
-            winkel_x    = +7
+            winkel_x    = +10
             winkel_y    = 0
             pos_ref[2]  = 165
         case 3: 
@@ -86,14 +86,14 @@ while n < 8:
             pos_ref[2]  = 165
         case 4: 
             winkel_x    = 0
-            winkel_y    = -7
+            winkel_y    = -10
             pos_ref[2]  = 165
         case 5: 
             winkel_x    = 0
-            winkel_y    = 7
+            winkel_y    = 10
             pos_ref[2]  = 165
         case 6: 
-            winkel_x    = 10
+            winkel_x    = 14
             winkel_y    = -10
             pos_ref[2]  = 165
         case 7: 
