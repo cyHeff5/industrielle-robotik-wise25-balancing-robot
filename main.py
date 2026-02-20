@@ -23,7 +23,7 @@ schwinge_o_l = 179.2
 schwinge_u_l = 70
 
 # Servos
-servo_v = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+servo_v = AngularServo(13, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_v = 1
 offset_v = 0
 # servo_l = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
