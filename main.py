@@ -99,9 +99,9 @@ while n < 8:
             winkel_y    = -10
             pos_ref[2]  = 165
         case 7: 
-            winkel_x    = 0
-            winkel_y    = -14
-            pos_ref[2]  = 165
+            winkel_x    = 45
+            winkel_y    = 0
+            pos_ref[2]  = 172
 
 
    
@@ -126,6 +126,9 @@ while n < 8:
 
     d = kinematik["d"] # Information aus Kinematik für nächsten Loop
     n_vektor = kinematik["n_vek"]
+
+
+
 
 
 

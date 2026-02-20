@@ -146,6 +146,11 @@ def func_servo_winkel(servo_welle, endpunkt, schwinge_o_l, schwinge_u_l):
 def func_servo_drehen(servo, winkel, offset, modifier):
     #Stellt servo auf Winkel ein, Winkel wird mit Offset + modifier angepasst
     winkel = winkel * modifier + offset
+
+    if winkel > 180:
+       winkel = 180
+    if winkel < 0:
+        winkel = 0
     servo.angle = winkel
     return
 
