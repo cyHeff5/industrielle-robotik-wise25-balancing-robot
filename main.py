@@ -71,7 +71,7 @@ while n < 8:
         case 0:
             winkel_x    = 0
             winkel_y    = 0
-            pos_ref[2]  = 100
+            pos_ref[2]  = 130
         case 1: 
             winkel_x    = -10
             winkel_y    = 0

@@ -57,12 +57,12 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, ref_point, winkel_x, wi
 
     d = func_d_fur_ebene(n_vek, ref_point)
      #--> Wir bleiben gerade immer um Standardhöhe
-    #ep_v[2] = func_z_in_ebene(ep_v, n_vek, d)
-    #ep_l[2] = func_z_in_ebene(ep_l, n_vek, d)
-    #ep_r[2] = func_z_in_ebene(ep_r, n_vek, d)
-    ep_v[2]  += ref_point[2]
-    ep_l[2]  += ref_point[2]
-    ep_r[2]  += ref_point[2]
+    ep_v[2] = func_z_in_ebene(ep_v, n_vek, d)
+    ep_l[2] = func_z_in_ebene(ep_l, n_vek, d)
+    ep_r[2] = func_z_in_ebene(ep_r, n_vek, d)
+    #ep_v[2]  += ref_point[2]
+    #ep_l[2]  += ref_point[2]
+    #ep_r[2]  += ref_point[2]
 
    # test = func_z_in_ebene(ref_point, n_vek, d)
       
@@ -133,7 +133,7 @@ def func_servo_winkel(servo_welle, endpunkt, schwinge_o_l, schwinge_u_l):
      phi_lot = math.atan(l_ew_vek[0] / l_ew_vek[1])
      winkel = math.degrees(phi_lot + phi_strich) # Winkel in [°]
     else: # Falls Endpunkt nicht erreichbar
-     winkel = -1
+     winkel = 130
 
 
 
