@@ -65,6 +65,8 @@ ball_pos[2] = func_z_in_ebene(ball_pos, n_vektor, d)
 
 n = 0 #counter
 pos_ref = np.array([0, 0, 165]) # std Referenzpunkt für Höhe
+
+time.sleep(5)
 while n < 8:
         
     match n:
@@ -73,7 +75,7 @@ while n < 8:
             winkel_y    = 0
             pos_ref[2]  = 130
         case 1: 
-            winkel_x    = -10
+            winkel_x    = -15
             winkel_y    = 0
             pos_ref[2]  = 165 
         case 2: 
@@ -98,7 +100,7 @@ while n < 8:
             pos_ref[2]  = 165
         case 7: 
             winkel_x    = 0
-            winkel_y    = 0
+            winkel_y    = -14
             pos_ref[2]  = 165
 
 
