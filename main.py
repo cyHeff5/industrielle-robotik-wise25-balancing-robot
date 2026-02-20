@@ -73,7 +73,7 @@ while n < 9:
         case 0:
             winkel_x    = 0
             winkel_y    = 0
-            pos_ref[2]  = 130
+            pos_ref[2]  = 230
         case 1: 
             winkel_x    = -15
             winkel_y    = 0
