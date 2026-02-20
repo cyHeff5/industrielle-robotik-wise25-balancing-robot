@@ -23,20 +23,20 @@ schwinge_o_l = 179.2
 schwinge_u_l = 70
 
 # Servos
-servo_v = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+#servo_v = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_v = 1
 offset_v = 0
-func_servo_drehen(servo_v, 90, offset_v, modifier_v)
+#func_servo_drehen(servo_v, 90, offset_v, modifier_v)
 
-servo_l = AngularServo(17, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+#servo_l = AngularServo(17, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_l = 1
 offset_l = 0
-func_servo_drehen(servo_l, 90, offset_l, modifier_l)
+#func_servo_drehen(servo_l, 90, offset_l, modifier_l)
 
-servo_r = AngularServo(22, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+#servo_r = AngularServo(22, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_r = 1
 offset_r = 0
-func_servo_drehen(servo_r, 90, offset_r, modifier_r)
+#func_servo_drehen(servo_r, 90, offset_r, modifier_r)
 
 # Pre-calculations
 delta_winkel = math.radians(delta_winkel - 90)
@@ -114,9 +114,9 @@ while n < 8:
         schwinge_u_l,
         solver_positionen,
     )
-    func_servo_drehen(servo_v, kinematik["phi_servo_v"], offset_v, modifier_v) # Servos ansteuern
-    func_servo_drehen(servo_l, kinematik["phi_servo_l"], offset_l, modifier_l)
-    func_servo_drehen(servo_r, kinematik["phi_servo_r"], offset_r, modifier_r)
+   #func_servo_drehen(servo_v, kinematik["phi_servo_v"], offset_v, modifier_v) # Servos ansteuern
+   #func_servo_drehen(servo_l, kinematik["phi_servo_l"], offset_l, modifier_l)
+   #func_servo_drehen(servo_r, kinematik["phi_servo_r"], offset_r, modifier_r)
     time.sleep(5)
     n += 1
 
