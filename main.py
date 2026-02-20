@@ -26,13 +26,13 @@ schwinge_o_l = 179.2
 schwinge_u_l = 70
 
 # Servos
-# servo_v = AngularServo(18, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+servo_v = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_v = 1
 offset_v = 0
-# servo_l = AngularServo(18, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+# servo_l = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_l = 1
 offset_l = 0
-# servo_r = AngularServo(18, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+# servo_r = AngularServo(22, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_r = 1
 offset_r = 0
 
@@ -71,7 +71,7 @@ while z < 90:
         y += 1
         f += 1
         winkel_x = -45 + z
-        winkel_y = 0
+        winkel_y = -45 + y
 
         t0 = time.perf_counter()
         kinematik = func_kinematik_main(
@@ -103,6 +103,9 @@ print(f"Solver success rate: {solver_ok_rate:.3f} ({f - solver_fail}/{f})")
 # n_vektor = kinematik["n_vek"]
 
 # Servo output
-# func_servo_drehen(servo_v, kinematik["phi_servo_v"], offset_v, modifier_v)
+func_servo_drehen(servo_v, 90, offset_v, modifier_v)
+time.sleep(2)
+func_servo_drehen(servo_v, 0, offset_v, modifier_v)
+
 # func_servo_drehen(servo_l, kinematik["phi_servo_l"], offset_l, modifier_l)
 # func_servo_drehen(servo_r, kinematik["phi_servo_r"], offset_r, modifier_r)
