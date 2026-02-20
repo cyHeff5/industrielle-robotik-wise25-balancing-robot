@@ -36,7 +36,7 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, ref_point, winkel_x, wi
     # Schnittgerade linker Link zur Ebene berechnen
     o = math.radians(30)
     tan_30 = math.tan(o)
-    a = (-n_vek[0] - n_vek[1] * tan_30) / n_vek[2]
+    a = (+n_vek[0] +n_vek[1] * tan_30) / n_vek[2]
     s_l = np.array([-1, -tan_30, a[0]])
 
     # Schnittgerade rechter Link zur Ebene berechnen
@@ -49,13 +49,9 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, ref_point, winkel_x, wi
     solver.update_directions(s_v=s_v, s_l=s_l, s_r=s_r)
     x, _, solver_success, solver_iter = solver.solve()
 
-    # initial guess for [tv, tl, tr]
-    a0 = np.array([100, 100, 100])
-
-    res = root(func_abstande, a0, args=(solver,), method="hybr", tol=1e-3) # Punkte über Solver finden
-    ep_v = res.x[0] * s_v #Punkte mit Solver ergebnis berechnen
-    ep_l = res.x[1] * s_l
-    ep_r = res.x[2] * s_r
+    ep_v = x[0] * s_v #Punkte mit Solver ergebnis berechnen
+    ep_l = x[1] * s_l
+    ep_r = x[2] * s_r
 
     # Hier Z Offset: ref_point bleibt auf konstanter Höhe
 
@@ -64,6 +60,8 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, ref_point, winkel_x, wi
     ep_v[2] = func_z_in_ebene(ep_v, n_vek, d)
     ep_l[2] = func_z_in_ebene(ep_l, n_vek, d)
     ep_r[2] = func_z_in_ebene(ep_r, n_vek, d)
+
+    test = func_z_in_ebene(ref_point, n_vek, d)
       
 
     # Feststellen: sind die Punkte erreichbar --> hier vereinfacht nur die Länge. Geplant Liste mit Erreichbarkeit
