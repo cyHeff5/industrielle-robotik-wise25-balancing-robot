@@ -23,15 +23,20 @@ schwinge_o_l = 179.2
 schwinge_u_l = 70
 
 # Servos
-servo_v = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+#servo_v = AngularServo(27, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_v = 1
 offset_v = 0
-servo_l = AngularServo(17, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+#func_servo_drehen(servo_v, 0, offset_v, modifier_v)
+
+#servo_l = AngularServo(17, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_l = 1
 offset_l = 0
-servo_r = AngularServo(22, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
+#func_servo_drehen(servo_l, 0, offset_l, modifier_l)
+
+#servo_r = AngularServo(22, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
 modifier_r = 1
 offset_r = 0
+#func_servo_drehen(servo_r, 0, offset_r, modifier_r)
 
 # Pre-calculations
 delta_winkel = math.radians(delta_winkel - 90)
@@ -58,69 +63,68 @@ solver_positionen = KinematikSolver(abstande=abstande, method=solver_method, tol
 ball_pos = np.array([15, 20, -100])
 ball_pos[2] = func_z_in_ebene(ball_pos, n_vektor, d)
 
-z = 0
-f = 0
-solver_fail = 0
-while z < 90:
-    z += 1
-    y = 0
-    while y < 90:
-        y += 1
-        f += 1
-        winkel_x = -45 + z
-        winkel_y = -45 + y
-
-        t0 = time.perf_counter()
-        kinematik = func_kinematik_main(
-            stutze_v_u_pos,
-            stutze_l_u_pos,
-            stutze_r_u_pos,
-            ball_pos,
-            winkel_x,
-            winkel_y,
-            schwinge_o_l,
-            schwinge_u_l,
-            solver_positionen,
-        )
-        if not kinematik["solver_success"]:
-            solver_fail += 1
-        dt = time.perf_counter() - t0
-        t_ges += dt
-
-# Stats
-t_avg = t_ges / f
-f_avg = 1 / t_avg
-z = z
-solver_ok_rate = (f - solver_fail) / f
-print(f"Solver method: {solver_method}")
-print(f"Mean loop time: {t_avg * 1e6:.2f} us ({f_avg:.1f} Hz)")
-print(f"Solver success rate: {solver_ok_rate:.3f} ({f - solver_fail}/{f})")
-
-# d = kinematik["d"]
-# n_vektor = kinematik["n_vek"]
-
-# Servo output
-func_servo_drehen(servo_v, 90, offset_v, modifier_v)
-time.sleep(2)
-func_servo_drehen(servo_v, 45, offset_v, modifier_v)
-
-time.sleep(2)
-func_servo_drehen(servo_v, 0, offset_v, modifier_v)
+n = 0 #counter
+pos_ref = np.array([0, 0, 165]) # std Referenzpunkt für Höhe
+while n < 8:
+        
+    match n:
+        case 0:
+            winkel_x    = 0
+            winkel_y    = 0
+            pos_ref[2]  = 140
+        case 1: 
+            winkel_x    = -7
+            winkel_y    = 0
+            pos_ref[2]  = 165 
+        case 2: 
+            winkel_x    = -7
+            winkel_y    = 0
+            pos_ref[2]  = 165
+        case 3: 
+            winkel_x    = 0
+            winkel_y    = 0
+            pos_ref[2]  = 165
+        case 4: 
+            winkel_x    = 0
+            winkel_y    = -7
+            pos_ref[2]  = 165
+        case 5: 
+            winkel_x    = 0
+            winkel_y    = 7
+            pos_ref[2]  = 165
+        case 6: 
+            winkel_x    = 7
+            winkel_y    = -7
+            pos_ref[2]  = 165
+        case 6: 
+            winkel_x    = 0
+            winkel_y    = 0
+            pos_ref[2]  = 165
 
 
-func_servo_drehen(servo_l, 45, offset_l, modifier_l)
-time.sleep(2)
-func_servo_drehen(servo_l, 120, offset_l, modifier_l)
+   
+    kinematik = func_kinematik_main(
+        stutze_v_u_pos,
+        stutze_l_u_pos,
+        stutze_r_u_pos,
+        ball_pos,
+        winkel_x,
+        winkel_y,
+        schwinge_o_l,
+        schwinge_u_l,
+        solver_positionen,
+    )
+    #func_servo_drehen(servo_v, kinematik["phi_servo_v"], offset_v, modifier_v) # Servos ansteuern
+    #func_servo_drehen(servo_l, kinematik["phi_servo_l"], offset_l, modifier_l)
+    #func_servo_drehen(servo_r, kinematik["phi_servo_r"], offset_r, modifier_r)
+    #time.sleep(5)
+    n += 1
 
-time.sleep(2)
-func_servo_drehen(servo_r, 0, offset_l, modifier_l)
 
-func_servo_drehen(servo_r, 15, offset_r, modifier_r)
-time.sleep(2)
-func_servo_drehen(servo_r, 70, offset_r, modifier_r)
 
-time.sleep(2)
-func_servo_drehen(servo_r, 0, offset_r, modifier_r)
+    d = kinematik["d"] # Information aus Kinematik für nächsten Loop
+    n_vektor = kinematik["n_vek"]
 
-# func_servo_drehen(servo_l, kinematik["phi_servo_l"], offset_l, modifier_l)
-# func_servo_drehen(servo_r, kinematik["phi_servo_r"], offset_r, modifier_r)
+
+
+
