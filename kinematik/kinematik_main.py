@@ -57,9 +57,12 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, ref_point, winkel_x, wi
 
     d = func_d_fur_ebene(n_vek, ref_point)
      #--> Wir bleiben gerade immer um Standardhöhe
-    ep_v[2] = func_z_in_ebene(ep_v, n_vek, d)
-    ep_l[2] = func_z_in_ebene(ep_l, n_vek, d)
-    ep_r[2] = func_z_in_ebene(ep_r, n_vek, d)
+    #ep_v[2] = func_z_in_ebene(ep_v, n_vek, d)
+    #ep_l[2] = func_z_in_ebene(ep_l, n_vek, d)
+    #ep_r[2] = func_z_in_ebene(ep_r, n_vek, d)
+    ep_v[2]  += ref_point[2]
+    ep_l[2]  += ref_point[2]
+    ep_r[2]  += ref_point[2]
 
     test = func_z_in_ebene(ref_point, n_vek, d)
       
