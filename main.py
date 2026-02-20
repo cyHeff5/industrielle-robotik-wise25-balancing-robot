@@ -67,7 +67,7 @@ n = 0 #counter
 pos_ref = np.array([0, 0, 165]) # std Referenzpunkt für Höhe
 
 time.sleep(5)
-while n < 8:
+while n < 9:
         
     match n:
         case 0:
@@ -99,6 +99,10 @@ while n < 8:
             winkel_y    = -10
             pos_ref[2]  = 165
         case 7: 
+            winkel_x    = 0
+            winkel_y    = 0
+            pos_ref[2]  = 172
+        case 8: 
             winkel_x    = 45
             winkel_y    = 0
             pos_ref[2]  = 172
