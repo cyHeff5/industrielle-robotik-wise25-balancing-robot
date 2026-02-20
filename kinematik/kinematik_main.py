@@ -64,7 +64,7 @@ def func_kinematik_main(pos_arm_v, pos_arm_l, pos_arm_r, ref_point, winkel_x, wi
     ep_l[2]  += ref_point[2]
     ep_r[2]  += ref_point[2]
 
-    test = func_z_in_ebene(ref_point, n_vek, d)
+   # test = func_z_in_ebene(ref_point, n_vek, d)
       
 
     # Feststellen: sind die Punkte erreichbar --> hier vereinfacht nur die Länge. Geplant Liste mit Erreichbarkeit
