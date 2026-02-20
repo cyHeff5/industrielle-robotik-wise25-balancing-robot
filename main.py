@@ -2,10 +2,7 @@ import math
 import time
 
 import numpy as np
-try:
-    from gpiozero import AngularServo  # for servo control
-except ImportError:
-    AngularServo = None
+from gpiozero import AngularServo  # for servo control
 
 from kinematik.ebenen_gleichungen import *
 from kinematik.kinematik_main import func_kinematik_main
