@@ -105,7 +105,7 @@ time.sleep(2)
 func_servo_drehen(servo_v, 180, offset_v, modifier_v)
 
 time.sleep(2)
-func_servo_drehen(servo_v, 180, offset_v, modifier_v)
+func_servo_drehen(servo_v, 0, offset_v, modifier_v)
 
 # func_servo_drehen(servo_l, kinematik["phi_servo_l"], offset_l, modifier_l)
 # func_servo_drehen(servo_r, kinematik["phi_servo_r"], offset_r, modifier_r)
