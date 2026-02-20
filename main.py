@@ -102,7 +102,7 @@ print(f"Solver success rate: {solver_ok_rate:.3f} ({f - solver_fail}/{f})")
 # Servo output
 func_servo_drehen(servo_v, 90, offset_v, modifier_v)
 time.sleep(2)
-func_servo_drehen(servo_v, 180, offset_v, modifier_v)
+func_servo_drehen(servo_v, 45, offset_v, modifier_v)
 
 time.sleep(2)
 func_servo_drehen(servo_v, 0, offset_v, modifier_v)
