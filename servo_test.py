@@ -34,6 +34,27 @@ def move_all(v: AngularServo, l: AngularServo, r: AngularServo, logic_deg: float
     set_servo_logic_angle(r, logic_deg, OFFSET_R, MODIFIER_R)
 
 
+def move_single(
+    servo_name: str,
+    v: AngularServo,
+    l: AngularServo,
+    r: AngularServo,
+    logic_deg: float,
+) -> None:
+    # Keep non-tested servos at neutral so only one servo moves.
+    move_all(v, l, r, NEUTRAL_LOGIC_DEG)
+    if servo_name == "v":
+        set_servo_logic_angle(v, logic_deg, OFFSET_V, MODIFIER_V)
+        return
+    if servo_name == "l":
+        set_servo_logic_angle(l, logic_deg, OFFSET_L, MODIFIER_L)
+        return
+    if servo_name == "r":
+        set_servo_logic_angle(r, logic_deg, OFFSET_R, MODIFIER_R)
+        return
+    raise ValueError(f"Unknown servo name: {servo_name}")
+
+
 def main() -> None:
     servo_v = AngularServo(PIN_V, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
     servo_l = AngularServo(PIN_L, min_angle=0, max_angle=180, min_pulse_width=0.0005, max_pulse_width=0.0025)
@@ -45,10 +66,12 @@ def main() -> None:
         time.sleep(1.0)
 
         while True:
-            for logic_deg in TEST_POINTS_LOGIC_DEG:
-                print(f"Move all servos to logic angle: {logic_deg} deg")
-                move_all(servo_v, servo_l, servo_r, logic_deg)
-                time.sleep(HOLD_S)
+            for servo_name in ("v", "l", "r"):
+                print(f"Testing servo '{servo_name.upper()}'")
+                for logic_deg in TEST_POINTS_LOGIC_DEG:
+                    print(f"  -> logic angle: {logic_deg} deg")
+                    move_single(servo_name, servo_v, servo_l, servo_r, logic_deg)
+                    time.sleep(HOLD_S)
     except KeyboardInterrupt:
         print("Stopping test, moving to neutral.")
     finally:
@@ -58,4 +81,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
