@@ -9,17 +9,48 @@ SERVO_PINS = {
     "r": 22,
 }
 
-# Slow synchronized movement settings
+# Slow movement settings
 LOW_DEG = 70.0
 HIGH_DEG = 110.0
 STEP_DEG = 1.0
 STEP_DELAY_S = 0.05
 PAUSE_AT_END_S = 0.5
+SERVO_SWITCH_DELAY_S = 2.0
 
 
 def set_all(servos: dict[str, AngularServo], angle: float) -> None:
     for servo in servos.values():
         servo.angle = angle
+
+
+def run_single_servo_cycle(servos: dict[str, AngularServo], active_name: str) -> None:
+    # Keep all other servos at neutral while one servo performs a full up/down cycle.
+    neutral = (LOW_DEG + HIGH_DEG) / 2.0
+    set_all(servos, neutral)
+    servo = servos[active_name]
+
+    angle = LOW_DEG
+    direction = +1.0
+    servo.angle = angle
+
+    while True:
+        angle += direction * STEP_DEG
+
+        if angle >= HIGH_DEG:
+            angle = HIGH_DEG
+            direction = -1.0
+            servo.angle = angle
+            time.sleep(PAUSE_AT_END_S)
+            continue
+
+        if angle <= LOW_DEG and direction < 0:
+            angle = LOW_DEG
+            servo.angle = angle
+            time.sleep(PAUSE_AT_END_S)
+            break
+
+        servo.angle = angle
+        time.sleep(STEP_DELAY_S)
 
 
 def main() -> None:
@@ -34,33 +65,18 @@ def main() -> None:
         for name, pin in SERVO_PINS.items()
     }
 
-    print("Testing all servos together (synchronized up/down).")
+    print("Testing servos sequentially (V -> L -> R).")
+    print(f"Delay between servos: {SERVO_SWITCH_DELAY_S:.1f}s")
     print("Press Ctrl+C to stop.")
 
     try:
-        angle = LOW_DEG
-        direction = +1.0
-        set_all(servos, angle)
+        set_all(servos, (LOW_DEG + HIGH_DEG) / 2.0)
 
         while True:
-            angle += direction * STEP_DEG
-
-            if angle >= HIGH_DEG:
-                angle = HIGH_DEG
-                direction = -1.0
-                set_all(servos, angle)
-                time.sleep(PAUSE_AT_END_S)
-                continue
-
-            if angle <= LOW_DEG:
-                angle = LOW_DEG
-                direction = +1.0
-                set_all(servos, angle)
-                time.sleep(PAUSE_AT_END_S)
-                continue
-
-            set_all(servos, angle)
-            time.sleep(STEP_DELAY_S)
+            for name in ("v", "l", "r"):
+                print(f"Testing servo '{name.upper()}'")
+                run_single_servo_cycle(servos, name)
+                time.sleep(SERVO_SWITCH_DELAY_S)
     except KeyboardInterrupt:
         print("Stopping servo test.")
     finally:
@@ -70,4 +86,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
