@@ -9,17 +9,24 @@ SERVO_PINS = {
     "r": 22,
 }
 
-# Slow movement settings
+# Motion settings
 LOW_DEG = 70.0
 HIGH_DEG = 110.0
 STEP_DEG = 1.0
 STEP_DELAY_S = 0.05
 PAUSE_AT_END_S = 0.5
-SERVO_SWITCH_DELAY_S = 1.0
+PHASE_DELAY_S = 1.0
+
+# Test sequence: first 1 servo, then 2, then 3
+TEST_PHASES = [
+    ("one", ("v",)),
+    ("two", ("v", "l")),
+    ("three", ("v", "l", "r")),
+]
 
 
 def release_servo(servo: AngularServo) -> None:
-    # Disable PWM output so servo no longer holds position.
+    # Disable PWM output so servo does not hold position.
     servo.angle = None
 
 
@@ -28,17 +35,21 @@ def release_all(servos: dict[str, AngularServo]) -> None:
         release_servo(servo)
 
 
-def run_single_servo_cycle(servos: dict[str, AngularServo], active_name: str) -> None:
-    active = servos[active_name]
-
-    # Ensure only one servo is powered at a time.
+def set_active_angle(servos: dict[str, AngularServo], active_names: tuple[str, ...], angle: float) -> None:
+    active = set(active_names)
     for name, servo in servos.items():
-        if name != active_name:
+        if name in active:
+            servo.angle = angle
+        else:
             release_servo(servo)
+
+
+def run_phase(servos: dict[str, AngularServo], phase_name: str, active_names: tuple[str, ...]) -> None:
+    print(f"Phase '{phase_name}': moving {len(active_names)} servo(s): {', '.join(n.upper() for n in active_names)}")
 
     angle = LOW_DEG
     direction = +1.0
-    active.angle = angle
+    set_active_angle(servos, active_names, angle)
 
     while True:
         angle += direction * STEP_DEG
@@ -46,21 +57,21 @@ def run_single_servo_cycle(servos: dict[str, AngularServo], active_name: str) ->
         if angle >= HIGH_DEG:
             angle = HIGH_DEG
             direction = -1.0
-            active.angle = angle
+            set_active_angle(servos, active_names, angle)
             time.sleep(PAUSE_AT_END_S)
             continue
 
         if angle <= LOW_DEG and direction < 0:
             angle = LOW_DEG
-            active.angle = angle
+            set_active_angle(servos, active_names, angle)
             time.sleep(PAUSE_AT_END_S)
             break
 
-        active.angle = angle
+        set_active_angle(servos, active_names, angle)
         time.sleep(STEP_DELAY_S)
 
-    # Release active servo after its motion cycle as well.
-    release_servo(active)
+    # Release everything at phase end.
+    release_all(servos)
 
 
 def main() -> None:
@@ -75,18 +86,17 @@ def main() -> None:
         for name, pin in SERVO_PINS.items()
     }
 
-    print("Sequential servo test (only active servo powered).")
-    print("Inactive servos are released (no hold torque). Press Ctrl+C to stop.")
+    print("Servo load test: 1 servo -> 2 servos -> 3 servos.")
+    print("Inactive servos are released (no hold current). Press Ctrl+C to stop.")
 
     try:
         release_all(servos)
         while True:
-            for name in ("v", "l", "r"):
-                print(f"Testing servo '{name.upper()}'")
-                run_single_servo_cycle(servos, name)
-                time.sleep(SERVO_SWITCH_DELAY_S)
+            for phase_name, active_names in TEST_PHASES:
+                run_phase(servos, phase_name, active_names)
+                time.sleep(PHASE_DELAY_S)
     except KeyboardInterrupt:
-        print("Stopping servo test.")
+        print("Stopping servo load test.")
     finally:
         release_all(servos)
         time.sleep(0.2)
