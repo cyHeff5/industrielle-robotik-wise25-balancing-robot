@@ -63,12 +63,13 @@ solver_positionen = KinematikSolver(abstande=abstande, method=solver_method, tol
 ball_pos = np.array([15, 20, -100])
 ball_pos[2] = func_z_in_ebene(ball_pos, n_vektor, d)
 
-n = -1 #counter
+n = 1 #counter
 pos_ref = np.array([0, 0, 165]) # std Referenzpunkt für Höhe
 
 time.sleep(5)
 while n < 9:
-        
+    time.sleep(2)
+    print("current pose: ", n)
     match n:
         case -1:
             winkel_x    = 0
