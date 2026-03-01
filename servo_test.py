@@ -1,4 +1,5 @@
 import time
+import math
 
 from gpiozero import AngularServo
 
@@ -9,12 +10,12 @@ SERVO_PINS = {
     "r": 22,
 }
 
-# Motion settings
+# Motion settings (smooth sinusoidal motion)
 LOW_DEG = 70.0
 HIGH_DEG = 110.0
-STEP_DEG = 1.0
-STEP_DELAY_S = 0.05
-PAUSE_AT_END_S = 0.5
+MOTION_PERIOD_S = 3.0
+MOTION_DT_S = 0.02
+PHASE_CYCLES = 2
 PHASE_DELAY_S = 1.0
 
 # Test sequence: first 1 servo, then 2, then 3
@@ -47,28 +48,20 @@ def set_active_angle(servos: dict[str, AngularServo], active_names: tuple[str, .
 def run_phase(servos: dict[str, AngularServo], phase_name: str, active_names: tuple[str, ...]) -> None:
     print(f"Phase '{phase_name}': moving {len(active_names)} servo(s): {', '.join(n.upper() for n in active_names)}")
 
-    angle = LOW_DEG
-    direction = +1.0
-    set_active_angle(servos, active_names, angle)
+    center = (LOW_DEG + HIGH_DEG) / 2.0
+    amplitude = (HIGH_DEG - LOW_DEG) / 2.0
+    omega = (2.0 * math.pi) / MOTION_PERIOD_S
+    start = time.perf_counter()
+    duration_s = PHASE_CYCLES * MOTION_PERIOD_S
 
     while True:
-        angle += direction * STEP_DEG
-
-        if angle >= HIGH_DEG:
-            angle = HIGH_DEG
-            direction = -1.0
-            set_active_angle(servos, active_names, angle)
-            time.sleep(PAUSE_AT_END_S)
-            continue
-
-        if angle <= LOW_DEG and direction < 0:
-            angle = LOW_DEG
-            set_active_angle(servos, active_names, angle)
-            time.sleep(PAUSE_AT_END_S)
+        now = time.perf_counter()
+        t = now - start
+        if t >= duration_s:
             break
-
+        angle = center + amplitude * math.sin(omega * t)
         set_active_angle(servos, active_names, angle)
-        time.sleep(STEP_DELAY_S)
+        time.sleep(MOTION_DT_S)
 
     # Release everything at phase end.
     release_all(servos)
@@ -104,4 +97,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
