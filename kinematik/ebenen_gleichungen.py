@@ -4,7 +4,7 @@ import math
 
 def func_z_in_ebene(position, n_vek, d):
 
-    z_punkt = (position[0] * n_vek[0] + position[1] * n_vek[1] - d) / n_vek[2]
+    z_punkt = - (position[0] * n_vek[0] + position[1] * n_vek[1] + d) / n_vek[2]
 
     return float(np.asarray(z_punkt).squeeze())
 
