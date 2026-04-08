@@ -3,19 +3,18 @@ Laptop-Test fuer die Platform-API mit MockServoDriver.
 Kein Raspberry Pi, keine Hardware noetig.
 
 Ausfuehren aus dem Projektroot:
-    python -m tests.platform_mock_test
+    python -m tools.platform_mock_test
 """
 
-from hardware import MockServoDriver
-from kinematik import KinematicsEngine, PlatformGeometry
 from balancing_platform import Platform
+from hardware import MockServoDriver
+from kinematik.geometry import PlatformGeometry
 
 
 def main() -> None:
-    geometry = PlatformGeometry()
     driver = MockServoDriver(verbose=True)
 
-    with Platform(driver, geometry) as platform:
+    with Platform(driver, PlatformGeometry()) as platform:
         print("\n--- Neutral ---")
         platform.neutral()
 
