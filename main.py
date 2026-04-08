@@ -1,7 +1,4 @@
-"""Hauptregelloop fuer die Balancing-Plattform.
-
-Tauscht MockServoDriver gegen PCA9685Driver aus wenn auf dem Pi.
-"""
+"""Hauptregelloop fuer die Balancing-Plattform."""
 
 from __future__ import annotations
 
@@ -16,7 +13,6 @@ from hardware import PCA9685Driver
 from hardware.pca9685_driver import ServoConfig
 from vision.ball_detection import BallDetectorRuntime, BallTracker, HsvRange
 
-# Kamera-Konfiguration
 FRAME_SIZE = (640, 480)
 CONTROL_HZ = 120.0
 PREDICTION_TIMEOUT = 0.5   # Sekunden bis Ball als "verloren" gilt
@@ -26,16 +22,11 @@ HSV_RANGE = HsvRange(
     upper=np.array([130, 255, 255], dtype=np.uint8),
 )
 
-# Kamera-Rotation: Die Kamera ist physisch verdreht montiert.
-# p1/p2 sind zwei bekannte Punkte auf der Plattform im Kamerabild,
-# anhand derer der Rotationswinkel zur Plattform-Achse berechnet wird.
+# Kamera ist verdreht montiert -- Korrekturwinkel aus zwei Punkten auf der Plattform
 _CAM_P1 = (-193, -142)
 _CAM_P2 = (277, 116)
 
-# Regler-Parameter (aus Polplatzierung, K_sys = (5/7)*g)
-#   omega_n ~ 3 rad/s, zeta = 1.0 (kritisch gedaempft)
-#   Kp = omega_n^2 / K_sys ~ 0.05
-#   Kd = 2*zeta*omega_n / K_sys ~ 0.033
+# Regler-Parameter (Polplatzierung: omega_n=3, zeta=1.0, K_sys=5/7*g)
 KP = 0.05
 KI = 0.008
 KD = 0.1 / 3
@@ -49,14 +40,12 @@ TARGET_Y_MM = -15.0
 
 
 def _camera_rotation_angle(p1: tuple[float, float], p2: tuple[float, float]) -> float:
-    """Berechnet den Winkel zwischen der Kamera-Ausrichtung und der Plattform-X-Achse."""
     dx = p2[0] - p1[0]
     dy = p2[1] - p1[1]
     return math.pi / 2 - math.atan2(dy, dx)
 
 
 def _rotate(x: float, y: float, angle: float) -> tuple[float, float]:
-    """Rotiert einen 2D-Punkt um den Ursprung."""
     return (
         x * math.cos(angle) - y * math.sin(angle),
         x * math.sin(angle) + y * math.cos(angle),
