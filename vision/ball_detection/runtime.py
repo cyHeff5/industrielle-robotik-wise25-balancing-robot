@@ -58,7 +58,9 @@ class BallDetectorRuntime:
         self._roi_misses = 0
 
         self._frame_bgr: np.ndarray | None = None
+        self._frame_ts: float = 0.0
         self._frame_lock = threading.Lock()
+        self._new_frame_event = threading.Event()
         self._stop_event = threading.Event()
 
         self._last_measurement: BallMeasurement | None = None
@@ -76,23 +78,34 @@ class BallDetectorRuntime:
         self._picam2 = picam2
 
         self._stop_event.clear()
-        threading.Thread(target=self._grab_and_detect_loop, daemon=True).start()
+        self._new_frame_event.clear()
+        threading.Thread(target=self._stream_loop, daemon=True).start()
+        threading.Thread(target=self._detection_loop, daemon=True).start()
 
-    def _grab_and_detect_loop(self) -> None:
+    def _stream_loop(self) -> None:
         while not self._stop_event.is_set():
             frame = self._picam2.capture_array()
             ts = perf_counter()
-
             if self.input_color_order == "RGB":
                 frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             else:
                 frame_bgr = frame
-
             with self._frame_lock:
                 self._frame_bgr = frame_bgr
+                self._frame_ts = ts
+            self._new_frame_event.set()
 
+    def _detection_loop(self) -> None:
+        while not self._stop_event.is_set():
+            if not self._new_frame_event.wait(timeout=0.1):
+                continue
+            self._new_frame_event.clear()
+            with self._frame_lock:
+                if self._frame_bgr is None:
+                    continue
+                frame_bgr = self._frame_bgr.copy()
+                ts = self._frame_ts
             result = self._detect_with_optional_roi(frame_bgr)
-
             if not result.valid:
                 measurement = BallMeasurement(
                     timestamp_s=ts, valid=False,
@@ -107,7 +120,6 @@ class BallDetectorRuntime:
                     x_rel_px=int(x_rel), y_rel_px=int(y_rel),
                     radius_px=float(result.radius_px), area_px=float(result.area_px),
                 )
-
             with self._measurement_lock:
                 self._last_measurement = measurement
 
