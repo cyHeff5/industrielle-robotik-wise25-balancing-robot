@@ -1,0 +1,26 @@
+{
+  "_comment": "Plattform-Positionen fuer die Kalibrierungsfahrt. Schachbrett auf Plattform legen, dann capture_calibration_set.py ausfuehren. Viel Winkelvariation = bessere Intrinsics.",
+  "positions": [
+    { "name": "flat",        "roll_deg":  0.0, "pitch_deg":  0.0, "settle_s": 1.5 },
+
+    { "name": "x_pos_8",    "roll_deg":  0.0, "pitch_deg":  8.0, "settle_s": 1.5 },
+    { "name": "x_neg_8",    "roll_deg":  0.0, "pitch_deg": -8.0, "settle_s": 1.5 },
+    { "name": "y_pos_8",    "roll_deg":  8.0, "pitch_deg":  0.0, "settle_s": 1.5 },
+    { "name": "y_neg_8",    "roll_deg": -8.0, "pitch_deg":  0.0, "settle_s": 1.5 },
+
+    { "name": "x_pos_14",   "roll_deg":  0.0, "pitch_deg": 14.0, "settle_s": 2.0 },
+    { "name": "x_neg_14",   "roll_deg":  0.0, "pitch_deg":-14.0, "settle_s": 2.0 },
+    { "name": "y_pos_14",   "roll_deg": 14.0, "pitch_deg":  0.0, "settle_s": 2.0 },
+    { "name": "y_neg_14",   "roll_deg":-14.0, "pitch_deg":  0.0, "settle_s": 2.0 },
+
+    { "name": "diag_pp_8",  "roll_deg":  8.0, "pitch_deg":  8.0, "settle_s": 2.0 },
+    { "name": "diag_pn_8",  "roll_deg":  8.0, "pitch_deg": -8.0, "settle_s": 2.0 },
+    { "name": "diag_np_8",  "roll_deg": -8.0, "pitch_deg":  8.0, "settle_s": 2.0 },
+    { "name": "diag_nn_8",  "roll_deg": -8.0, "pitch_deg": -8.0, "settle_s": 2.0 },
+
+    { "name": "diag_pp_12", "roll_deg": 10.0, "pitch_deg": 10.0, "settle_s": 2.0 },
+    { "name": "diag_nn_12", "roll_deg":-10.0, "pitch_deg":-10.0, "settle_s": 2.0 },
+
+    { "name": "flat_end",   "roll_deg":  0.0, "pitch_deg":  0.0, "settle_s": 1.5 }
+  ]
+}
