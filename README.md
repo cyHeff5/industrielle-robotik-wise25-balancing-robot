@@ -95,3 +95,47 @@ Falls keine Netzwerkverbindung verfügbar ist oder die IP nicht bekannt ist, ein
 cd industrielle-robotik-wise25-balancing-robot
 git pull
 ```
+
+---
+
+## Tutorial 3: main.py automatisch beim Booten starten (systemd)
+
+Nach dem Testen einmalig auf dem Pi einrichten.
+
+**1. Service-Datei erstellen**
+```bash
+sudo nano /etc/systemd/system/balancing-robot.service
+```
+
+Folgenden Inhalt einfügen (Pfad ggf. anpassen):
+```ini
+[Unit]
+Description=Balancing Robot
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/industrielle-robotik-wise25-balancing-robot/main.py
+WorkingDirectory=/home/pi/industrielle-robotik-wise25-balancing-robot
+Restart=on-failure
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Speichern und schließen: `Ctrl+O`, `Enter`, `Ctrl+X`
+
+**2. Service aktivieren und starten**
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable balancing-robot
+sudo systemctl start balancing-robot
+```
+
+**Nützliche Befehle**
+```bash
+sudo systemctl status balancing-robot   # Status prüfen
+journalctl -u balancing-robot -f        # Live-Logs anzeigen
+sudo systemctl stop balancing-robot     # Manuell stoppen
+sudo systemctl disable balancing-robot  # Auto-Start deaktivieren
+```
