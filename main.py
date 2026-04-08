@@ -13,7 +13,7 @@ from hardware import PCA9685Driver
 from hardware.pca9685_driver import ServoConfig
 from vision.ball_detection import BallDetectorRuntime, BallTracker, HsvRange
 
-FRAME_SIZE = (640, 480)
+FRAME_SIZE = (2500, 2500)
 CONTROL_HZ = 120.0
 PREDICTION_TIMEOUT = 0.5   # Sekunden bis Ball als "verloren" gilt
 
@@ -63,6 +63,7 @@ def main() -> None:
             hsv_range=HSV_RANGE,
             frame_size=FRAME_SIZE,
             use_roi_tracking=True,
+            downsample_factor=2,
         )
         tracker = BallTracker(detector)
 
@@ -73,11 +74,9 @@ def main() -> None:
         period_s = 1.0 / CONTROL_HZ
         detector.start()
 
-        print("Warte auf ersten Frame...")
         while detector.get_latest_frame() is None:
             time.sleep(0.05)
 
-        print("Bereit. Ctrl+C zum Beenden.")
         platform.neutral()
         next_tick = time.perf_counter()
 
@@ -86,17 +85,12 @@ def main() -> None:
         rot_x_px, rot_y_px = 0.0, 0.0
         rot_vx_px, rot_vy_px = 0.0, 0.0
         prev_time = time.perf_counter()
-        last_print_time = 0.0
 
         try:
             while True:
                 current_time = time.perf_counter()
                 dt = current_time - prev_time
                 prev_time = current_time
-
-                if current_time - last_print_time > 1.0:
-                    print(f"Regelfrequenz: {1.0 / dt:.1f} Hz")
-                    last_print_time = current_time
 
                 state = tracker.get()
 
@@ -142,7 +136,7 @@ def main() -> None:
                     next_tick = time.perf_counter()
 
         except KeyboardInterrupt:
-            print("Gestoppt.")
+            pass
         finally:
             detector.stop()
 
