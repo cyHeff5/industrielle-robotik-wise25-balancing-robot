@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from .base import ServoDriver
 from .pca9685_driver import ServoConfig, _apply_mapping

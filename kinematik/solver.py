@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import numpy as np
 from kinematik.numba_abstande import NumbaAbstande
