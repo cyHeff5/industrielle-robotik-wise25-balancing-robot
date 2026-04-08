@@ -1,6 +1,5 @@
 """Hauptregelloop fuer die Balancing-Plattform."""
 
-from __future__ import annotations
 
 import math
 import time

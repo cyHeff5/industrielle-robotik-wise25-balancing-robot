@@ -5,7 +5,6 @@
 
 #Verwendet den Frame aus BallDetectorRuntime, keine eigene Kamera.
 
-from __future__ import annotations
 
 import threading
 from typing import Callable
