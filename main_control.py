@@ -5,7 +5,7 @@ import time
 import numpy as np
 
 from balancing_platform import Platform
-from control.pd_controller import PDController
+from control.pid_controller import PIDController
 from hardware import MockServoDriver, PCA9685Driver
 from vision.ball_detection import BallDetectorRuntime, BallTracker, HsvRange
 
@@ -40,8 +40,8 @@ detector = BallDetectorRuntime(
 )
 tracker = BallTracker(detector, ema_alpha=0.3)
 
-pid_x = PDController(kp=KP, kd=KD, u_min=-MAX_TILT, u_max=MAX_TILT, d_max_abs=D_MAX)
-pid_y = PDController(kp=KP, kd=KD, u_min=-MAX_TILT, u_max=MAX_TILT, d_max_abs=D_MAX)
+pid_x = PIDController(kp=KP, ki=0.0, kd=KD, max_out=MAX_TILT, max_int=10.0)
+pid_y = PIDController(kp=KP, ki=0.0, kd=KD, max_out=MAX_TILT, max_int=10.0)
 
 period_s = 1.0 / CONTROL_HZ
 detector.start()
@@ -74,9 +74,9 @@ try:
                 pos_x_mm += state.vx * PX_TO_MM * period_s
                 pos_y_mm += state.vy * PX_TO_MM * period_s
 
-            # Regler: Fehler = Ziel (0,0) - aktuelle Position
-            winkel_x = pid_x.update(-pos_x_mm, period_s)
-            winkel_y = pid_y.update(-pos_y_mm, period_s)
+            # Regler: Ziel = 0,0 (Bildmitte)
+            winkel_x = pid_x.update(0.0, pos_x_mm, period_s)
+            winkel_y = pid_y.update(0.0, pos_y_mm, period_s)
 
             platform.set_tilt(winkel_x, winkel_y)
 
