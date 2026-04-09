@@ -79,7 +79,7 @@ print("Ready. Ctrl+C to stop.")
 try:
     # Alpha-Werte:
     # 0.044 → sehr sanfte Regelung | 0.06 → empfohlen | 0.3 → mittlere Reaktion
-    angle_filter = LowPassFilter(alpha=0.03)
+    angle_filter = LowPassFilter(alpha=0.05)
     platform.neutral()
     next_tick = time.perf_counter()
 
