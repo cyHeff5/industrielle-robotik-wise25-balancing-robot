@@ -14,8 +14,6 @@ class BallState:
     y: float            # Position Y relativ zur Bildmitte [px]
     vx: float           # Geschwindigkeit X (EMA-gefiltert) [px/s]
     vy: float           # Geschwindigkeit Y (EMA-gefiltert) [px/s]
-    v: float            # Betrag der Geschwindigkeit [px/s]
-    dt: float           # Zeit seit letztem Frame [s]
 
 
 class BallTracker:
@@ -41,7 +39,7 @@ class BallTracker:
             self._vy_filtered = 0.0
             self._last_state = BallState(
                 valid=False, is_new_frame=False, timestamp_s=0.0,
-                x=0.0, y=0.0, vx=0.0, vy=0.0, v=0.0, dt=0.0,
+                x=0.0, y=0.0, vx=0.0, vy=0.0,
             )
             return self._last_state
 
@@ -55,8 +53,6 @@ class BallTracker:
                 y=self._last_state.y,
                 vx=self._vx_filtered,
                 vy=self._vy_filtered,
-                v=self._last_state.v,
-                dt=self._last_state.dt,
             )
 
         # Echter neuer Frame: Geschwindigkeit berechnen und EMA filtern
@@ -69,8 +65,6 @@ class BallTracker:
                 self._vx_filtered = self._ema_alpha * vx_raw + (1 - self._ema_alpha) * self._vx_filtered
                 self._vy_filtered = self._ema_alpha * vy_raw + (1 - self._ema_alpha) * self._vy_filtered
 
-        v = (self._vx_filtered**2 + self._vy_filtered**2) ** 0.5
-
         self._prev = m
         self._last_state = BallState(
             valid=True,
@@ -80,7 +74,5 @@ class BallTracker:
             y=float(m.y_rel_px),
             vx=self._vx_filtered,
             vy=self._vy_filtered,
-            v=v,
-            dt=dt,
         )
         return self._last_state
