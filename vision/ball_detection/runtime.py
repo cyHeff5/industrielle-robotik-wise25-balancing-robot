@@ -58,10 +58,11 @@ class BallDetectorRuntime:
         self._roi_misses = 0
 
         self._frame_bgr: np.ndarray | None = None
-        self._frame_ts: float = 0.0
-        self._frame_lock = threading.Lock()
-        self._new_frame_event = threading.Event()
+        self._lock = threading.Lock()
         self._stop_event = threading.Event()
+
+        self._debug_frame: np.ndarray | None = None
+        self._debug_lock = threading.Lock()
 
         self._last_measurement: BallMeasurement | None = None
         self._measurement_lock = threading.Lock()
@@ -78,11 +79,9 @@ class BallDetectorRuntime:
         self._picam2 = picam2
 
         self._stop_event.clear()
-        self._new_frame_event.clear()
-        threading.Thread(target=self._stream_loop, daemon=True).start()
-        threading.Thread(target=self._detection_loop, daemon=True).start()
+        threading.Thread(target=self._grab_and_detect_loop, daemon=True).start()
 
-    def _stream_loop(self) -> None:
+    def _grab_and_detect_loop(self) -> None:
         while not self._stop_event.is_set():
             frame = self._picam2.capture_array()
             ts = perf_counter()
@@ -90,21 +89,8 @@ class BallDetectorRuntime:
                 frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             else:
                 frame_bgr = frame
-            with self._frame_lock:
+            with self._lock:
                 self._frame_bgr = frame_bgr
-                self._frame_ts = ts
-            self._new_frame_event.set()
-
-    def _detection_loop(self) -> None:
-        while not self._stop_event.is_set():
-            if not self._new_frame_event.wait(timeout=0.1):
-                continue
-            self._new_frame_event.clear()
-            with self._frame_lock:
-                if self._frame_bgr is None:
-                    continue
-                frame_bgr = self._frame_bgr.copy()
-                ts = self._frame_ts
             result = self._detect_with_optional_roi(frame_bgr)
             if not result.valid:
                 measurement = BallMeasurement(
@@ -124,7 +110,7 @@ class BallDetectorRuntime:
                 self._last_measurement = measurement
 
     def get_latest_frame(self) -> np.ndarray | None:
-        with self._frame_lock:
+        with self._lock:
             return self._frame_bgr.copy() if self._frame_bgr is not None else None
 
     def get_last_measurement(self) -> BallMeasurement | None:
@@ -150,8 +136,6 @@ class BallDetectorRuntime:
             return
         self._picam2.stop()
         self._picam2 = None
-        self._roi = None
-        self._roi_misses = 0
 
     def debug_state(self) -> dict:
         return {
@@ -191,6 +175,8 @@ class BallDetectorRuntime:
 
     def _detect_frame(self, frame_bgr: np.ndarray, x_offset: int, y_offset: int) -> DetectionResult:
         if self.downsample_factor == 1:
+            with self._debug_lock:
+                self._debug_frame = frame_bgr.copy()
             local = detect_ball(frame_bgr, self.hsv_range)
             if not local.valid:
                 return local
@@ -206,6 +192,8 @@ class BallDetectorRuntime:
         h, w = frame_bgr.shape[:2]
         w_small, h_small = max(1, w // f), max(1, h // f)
         small = cv2.resize(frame_bgr, (w_small, h_small), interpolation=cv2.INTER_AREA)
+        with self._debug_lock:
+            self._debug_frame = small.copy()
         local_small = detect_ball(small, self.hsv_range)
         if not local_small.valid:
             return local_small
